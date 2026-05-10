@@ -17,16 +17,10 @@
 #   Join key for all four junction/registry tables: manuscript_id
 #
 # Usage:
-#     python build_all_dbs.py --input inventory.xlsx --outdir ./output
+#     python combined_db.py --input inventory.xlsx --outdir ./output
 #
 # Requirements:
 #     pip install pandas openpyxl
-#
-# Why one script?
-#   Running build_author_db.py and build_submitter_db.py separately each writes
-#   its own records.csv, stripping only its own columns. The second run would
-#   overwrite the first. This script strips ALL normalised columns in a single
-#   pass so records.csv is definitive and complete.
 
 import argparse
 import gc
