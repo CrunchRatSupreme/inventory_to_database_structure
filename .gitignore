@@ -1,0 +1,13 @@
+ 
+# Ignore all data files — never commit these
+*.xlsx
+*.csv
+*.xls
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore common OS junk
+.DS_Store
+Thumbs.db
