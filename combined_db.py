@@ -14,7 +14,7 @@
 #   records  <--  record_authors   -->  authors
 #   records  <--  record_submitters --> submitters
 #
-#   Join key for all four junction/registry tables: manuscript_id
+#   Join key for all four junction/registry tables: context_key
 #
 # Usage:
 #     python combined_db.py --input inventory.xlsx --outdir ./output
@@ -43,7 +43,9 @@ MAX_AUTHORS = 132
 SUBMITTER_COL = "submitted_by"
 
 # Stable record identifier — used as the join key in all junction tables
-RECORD_KEY = "manuscript_id"
+# context_key is used instead of manuscript_id because it is truly unique
+# across all 89,002 rows (manuscript_id has duplicates).
+RECORD_KEY = "context_key"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -278,14 +280,14 @@ def build(input_path: str, outdir: str) -> None:
     # One row per record-author pair, preserving author order.
     junction_auth_rows = []
     for _, row in df_auth.iterrows():
-        manuscript_id = clean(row[RECORD_KEY])
+        context_key = clean(row[RECORD_KEY])
         for order, author in enumerate(parse_authors_from_row(row), start=1):
             key = make_author_dedup_key(author)
             if key in author_key_to_id:
                 junction_auth_rows.append({
-                    "manuscript_id": manuscript_id,
-                    "author_id":     author_key_to_id[key],
-                    "author_order":  order,
+                    "context_key":  context_key,
+                    "author_id":    author_key_to_id[key],
+                    "author_order": order,
                 })
 
     junction_auth_df   = pd.DataFrame(junction_auth_rows)
@@ -348,12 +350,12 @@ def build(input_path: str, outdir: str) -> None:
     # Build and write record_submitters.csv
     junction_sub_rows = []
     for _, row in df_sub.iterrows():
-        manuscript_id = clean(row[RECORD_KEY])
-        email         = clean(row[SUBMITTER_COL])
-        if manuscript_id and email and email in email_to_id:
+        context_key = clean(row[RECORD_KEY])
+        email       = clean(row[SUBMITTER_COL])
+        if context_key and email and email in email_to_id:
             junction_sub_rows.append({
-                "manuscript_id": manuscript_id,
-                "submitter_id":  email_to_id[email],
+                "context_key":  context_key,
+                "submitter_id": email_to_id[email],
             })
 
     junction_sub_df   = pd.DataFrame(junction_sub_rows)
@@ -409,9 +411,9 @@ def build(input_path: str, outdir: str) -> None:
     print("  merged[merged['email'] == 'jane.wildermuth@wright.edu']")
     print()
     print("  # Full picture: record + its authors + its submitter:")
-    print("  r_a  = pd.merge(records, record_authors,    on='manuscript_id')")
+    print("  r_a  = pd.merge(records, record_authors,    on='context_key')")
     print("  r_a  = pd.merge(r_a,     authors,           on='author_id')")
-    print("  r_as = pd.merge(r_a,     record_submitters, on='manuscript_id')")
+    print("  r_as = pd.merge(r_a,     record_submitters, on='context_key')")
     print("  r_as = pd.merge(r_as,    submitters,        on='submitter_id')")
 
 
